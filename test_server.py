@@ -1,34 +1,53 @@
 import os, time
 from mcp.server.fastmcp import FastMCP
-import pyJianYingDraft as draft
-from pyJianYingDraft import Intro_type, Transition_type, trange
+# import pyJianYingDraft as draft
+# from pyJianYingDraft import Intro_type, Transition_type, trange
 
-mcp = FastMCP("GetAudio")
-
-@mcp.tool()
-def get_time() -> str:
-    """
-    Use this tool to get current time.
-    Parameters:
-        None
-    Returns:
-        Success: return Success
-        Failed: return Failed
-    """
-    testObj = Test()
-    time = testObj.eh()
-    print(time);
-    return 'Success'
+mcp = FastMCP("GetAudioo")
 
 class Test:
-    
-    def __new__(cls):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super().__new__(cls)
+            cls._instance.__init__(*args, **kwargs)
         return cls._instance
-    
+
     def __init__(self):
-        self.a = int(time.time() * 1000)  # 获取当前时间戳，精确到毫秒
-        
+        if not hasattr(self, 'a'):
+            self.a = int(time.time() * 1000)  # 获取当前时间戳，精确到毫秒
+
     def eh(self):
-        print(self.a);
+        return self.a
+
+@mcp.tool()
+def get_cc_value() -> str:
+        """
+        Use this tool to get cc value.
+        Parameters:
+            None
+        Returns:
+            Success: return cc value
+            Failed: return Failed
+        """
+        testObj = Test()
+        timex = testObj.eh()
+        return str(timex)
+    
+@mcp.tool()
+def get_dd_value() -> str:
+        """
+        Use this tool to get dd value.
+        Parameters:
+            None
+        Returns:
+            Success: return dd value
+            Failed: return Failed
+        """
+        testObjd = Test()
+        timed = testObjd.eh()
+        return str(timed)
+
+if __name__ == "__main__":
+    mcp.run(transport='stdio')
