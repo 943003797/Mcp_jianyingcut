@@ -15,29 +15,37 @@ class Test:
         return cls._instance
 
     def __init__(self, bgm: str = "bgm.mp3"):
-        self.DUMP_PATH = "S:/AI/AutoGenTest/output/JianyingPro Drafts/acc/draft_content.json"
-        self.tutorial_asset_dir = "S:/AI/AutoGenTest/output"
+        self.DUMP_PATH = "../../AutoGenTest/output/JianyingPro Drafts/Draft/draft_content.json"
+        self.tutorial_asset_dir = "../../AutoGenTest/output"
         self.script = draft.Script_file(1920, 1080)
-        self.script.add_track(draft.Track_type.audio, 'tts')
-        self.script.add_track(draft.Track_type.audio, 'bgm')
-        audio_material = draft.Audio_material(os.path.join(self.tutorial_asset_dir, bgm))
+        self.script.add_track(draft.Track_type.audio, 'TTS')
+        self.script.add_track(draft.Track_type.audio, 'BGM')
+        audio_bgm = draft.Audio_material(os.path.join(self.tutorial_asset_dir, bgm))
+        audio_bgm_lenth = audio_bgm.duration/1000000
+        self.script.add_material(audio_bgm)
+        audio_bgm_segment = draft.Audio_segment(audio_bgm, trange(f"{self.nowS}s", f"{audio_bgm_lenth}s"),volume=0.2)
+        audio_bgm_segment.add_fade("1s", "1s")
+        self.script.add_segment(audio_bgm_segment, 'BGM')
+        
+    def addTitle(self, filename: str):
+        audio_material = draft.Audio_material(os.path.join(self.tutorial_asset_dir, 'title.mp3'))
         audio_duration = audio_material.duration/1000000
         self.script.add_material(audio_material)
         audio_segment = draft.Audio_segment(audio_material,
                                     trange(f"{self.nowS}s", f"{audio_duration}s"),
-                                    volume=0.3)
-        audio_segment.add_fade("1s", "0s")   
-        self.script.add_segment(audio_segment, 'bgm')
+                                    volume=1)
+        self.script.add_segment(audio_segment, 'TTS')
+        self.nowS += audio_duration + 0.3
         
     
-    def addAudio(self, filename: str) -> str:
+    def addItem(self, filename: str) -> str:
         audio_material = draft.Audio_material(os.path.join(self.tutorial_asset_dir, filename))
         audio_duration = audio_material.duration/1000000
         self.script.add_material(audio_material)
         audio_segment = draft.Audio_segment(audio_material,
                                     trange(f"{self.nowS}s", f"{audio_duration}s"),
                                     volume=1)
-        self.script.add_segment(audio_segment, 'tts')
+        self.script.add_segment(audio_segment, 'TTS')
         self.nowS += audio_duration + 0.3
         
         return 'Success'
@@ -56,7 +64,7 @@ class Test:
     #             self.addAudio(filename)
 if __name__ == "__main__":
     testObj = Test('爱的供养-间奏.mp3')
-    testObj.addAudio('title.mp3')
-    testObj.addAudio('a.mp3')
-    testObj.addAudio('b.mp3')
+    testObj.addTitle('title.mp3')
+    testObj.addItem('a.mp3')
+    testObj.addItem('b.mp3')
     testObj.dumpDraft()
