@@ -17,7 +17,7 @@ class Test:
             cls._instance.__init__(*args, **kwargs)
         return cls._instance
 
-    def __init__(self, bgm: str = "bgm.mp3"):
+    def __init__(self):
         self.DUMP_PATH = "../../AutoGenTest/output/JianyingPro Drafts/Draft/draft_content.json"
         self.tutorial_asset_dir = "../../AutoGenTest/output"
         self.script = draft.Script_file(1920, 1080)
@@ -33,11 +33,12 @@ class Test:
         self.script.add_track(draft.Track_type.text, 'T6')
         self.script.add_track(draft.Track_type.text, 'ZZ')
         self.script.add_track(draft.Track_type.text, 'SX')
-        
+
+    def addBgm(self, bgm: str):
         audio_bgm = draft.Audio_material(os.path.join(self.tutorial_asset_dir, bgm))
         audio_bgm_lenth = audio_bgm.duration
         self.script.add_material(audio_bgm)
-        audio_bgm_segment = draft.Audio_segment(audio_bgm, trange(self.nowS, audio_bgm_lenth),volume=0.2)
+        audio_bgm_segment = draft.Audio_segment(audio_bgm, trange(0, self.nowS),volume=0.2)
         audio_bgm_segment.add_fade("1s", "1s")
         self.script.add_segment(audio_bgm_segment, 'BGM')
         
@@ -79,7 +80,7 @@ class Test:
             json_data = json.load(f)
         for key, item in json_data.items() if isinstance(json_data, dict) else enumerate(json_data):
             # 音频素材
-            audio_material = draft.Audio_material(os.path.join(self.tutorial_asset_dir, f"{item['ttsName']}.mp3"))
+            audio_material = draft.Audio_material(os.path.join(self.tutorial_asset_dir, f"{item['peiyin']}.mp3"))
             audio_duration = audio_material.duration
             print(audio_duration)
             self.script.add_material(audio_material)
@@ -155,7 +156,7 @@ class Test:
         video_duration = video_material.duration
         self.script.add_material(video_material)
         video_segment = draft.Video_segment(video_material,
-                                    trange(0, video_duration),
+                                    trange(0, self.nowS),
                                     volume=0)
         self.script.add_segment(video_segment, 'BGV')
 
@@ -164,7 +165,6 @@ class Test:
 
     # def addText(self):
     #     self.script.add_track(draft.Track_type.text, track_name="text0", relative_index=0)
-        
     # def addAllAudio(self):
     #     # 遍历音频文件夹中的所有文件
     #     for filename in os.listdir(self.tutorial_asset_dir):
@@ -172,8 +172,9 @@ class Test:
     #         if filename.endswith(('.mp3', '.wav', '.m4a')):
     #             self.addAudio(filename)
 if __name__ == "__main__":
-    testObj = Test('爱的供养-间奏.mp3')
-    testObj.addVideo('bgv.mp4')
+    testObj = Test()
     testObj.addTitle('t0')
     testObj.addItem('item')
+    testObj.addBgm('爱的供养-间奏.mp3')
+    testObj.addVideo('bgv.mp4')
     testObj.dumpDraft()
