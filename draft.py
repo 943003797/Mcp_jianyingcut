@@ -63,7 +63,7 @@ class Test:
         self.script.add_segment(video_segment, 'BGVC')
         
     def addTitle(self, filename: str):
-        audio_material = draft.Audio_material(os.path.join(self.tutorial_asset_dir, f'{filename}.mp3'))
+        audio_material = draft.Audio_material(os.path.join(self.tutorial_asset_dir, 't0.mp3'))
         audio_duration = audio_material.duration
         self.script.add_material(audio_material)
         audio_segment = draft.Audio_segment(audio_material,
@@ -71,8 +71,11 @@ class Test:
                                     volume=1)
         self.script.add_segment(audio_segment, 'TTS')
         self.nowS += audio_duration + 500000
-        title = "千古词帝，李煜的巅峰之作。哪句更触动你心"
-        segments = [segment for segment in title.split('。') if segment]
+        titleJson = os.path.join(self.tutorial_asset_dir, 'title.json')
+        with open(titleJson, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            title = data.get('title')
+        segments = [segment for segment in title.split('，') if segment]
         total_length = len(title)
         list = [[segment, round(len(segment) / total_length, 3)] for segment in segments]
         for key, (segment, ratio) in enumerate(list):
@@ -107,20 +110,26 @@ class Test:
             json_data = json.load(f)
         for key, item in json_data.items() if isinstance(json_data, dict) else enumerate(json_data):
             # 音频素材
-            audio_material = draft.Audio_material(os.path.join(self.tutorial_asset_dir, f"{item['peiyin']}.mp3"))
-            audio_duration = audio_material.duration
-
-            self.script.add_material(audio_material)
-            audio_segment = draft.Audio_segment(audio_material,
-                                    trange(int(self.nowS), int(audio_duration)),
+            itemPeiyinNow = self.nowS
+            audio_duration = 0
+            for i in range(10):
+                if os.path.exists(os.path.join(self.tutorial_asset_dir, f"{item['peiyin']}{i}.mp3")):
+                    audio_material = draft.Audio_material(os.path.join(self.tutorial_asset_dir, f"{item['peiyin']}{i}.mp3"))
+                    audio_length = audio_material.duration
+                    
+                    self.script.add_material(audio_material)
+                    audio_segment = draft.Audio_segment(audio_material,
+                                    trange(int(itemPeiyinNow), int(audio_length)),
                                     volume=1)
-            self.script.add_segment(audio_segment, 'TTS')
+                    self.script.add_segment(audio_segment, 'TTS')
+                    itemPeiyinNow += audio_length
+                    audio_duration+=audio_length
+            
             # 背景素材,分段定制
             
             # video_material = draft.Video_material(os.path.join(self.tutorial_asset_dir, "bgloop.mp4"))
             # video_duration = video_material.duration
             # self.script.add_material(video_material)
-            # print(int(audio_duration))
             # video_segment = draft.Video_segment(material = video_material,
             #                                             target_timerange  = trange(int(self.nowS), int(audio_duration) + 500000),
             #                                             source_timerange = trange(f"{random.randint(110,240)}s", int(audio_duration)),
@@ -192,17 +201,14 @@ class Test:
             for key, item in enumerate(list):
                         if key == 0:
                             start = self.nowS
-                            duration = audio_material.duration
-                            animation_duration = audio_material.duration / 4
+                            duration = audio_duration
+                            animation_duration = audio_duration / 4
                             fixed_x = split[splitNum]['fixed'][key][0]
                             fixed_y = split[splitNum]['fixed'][key][1]
                         else:
                             start = self.nowS + indent
-                            # print(self.nowS + audio_material.duration)
-                            # print(start)
-                            # print(self.nowS + audio_material.duration - start)
-                            duration = self.nowS + audio_material.duration - start
-                            animation_duration = audio_material.duration / 4
+                            duration = self.nowS + audio_duration - start
+                            animation_duration = audio_duration / 4
                             fixed_x = split[splitNum]['fixed'][key][0]
                             fixed_y = split[splitNum]['fixed'][key][1]
                         text_segment = draft.Text_segment(list[key][0], trange(start, duration),  # 文本将持续整个视频（注意script.duration在上方片段添加到轨道后才会自动更新）
@@ -213,7 +219,7 @@ class Test:
                         text_segment.add_animation(Text_outro.渐隐, animation_duration/3)
                         self.script.add_segment(text_segment, 'T' + str(key))
                         indent += 500000
-
+            print(audio_duration/500000)
             self.nowS += audio_duration + 500000
         return 'Success'
     
@@ -239,8 +245,8 @@ class Test:
     #             self.addAudio(filename)
 if __name__ == "__main__":
     testObj = Test()
-    testObj.addTitle('t0')
+    testObj.addTitle('title')
     testObj.addItem('item')
-    testObj.addBgm('爱的供养-间奏.mp3')
+    testObj.addBgm('BGM_爱的供养_间奏.mp3')
     # testObj.addVideo('bgv.mp4')
     testObj.dumpDraft()
