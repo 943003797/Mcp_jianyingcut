@@ -5,7 +5,7 @@ from pyJianYingDraft import Text_intro, Text_outro, Text_loop_anim, Mask_type
 from pyJianYingDraft import animation
 from pyJianYingDraft.script_file import json
 
-class autoDraft():
+class autoCut():
     _instance = None
     script = draft.Script_file(1920, 1080)
     tutorial_asset_dir = ""
